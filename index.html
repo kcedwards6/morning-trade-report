@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morning Trade Report · $5,800 Account</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f0e;
+    --surface: #151816;
+    --surface2: #1c1f1d;
+    --surface3: #232623;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #eef0ed;
+    --muted: #7a8078;
+    --muted2: #4f5450;
+    --green: #4ade80;
+    --green-dim: #1a3d2a;
+    --green-mid: #22c55e;
+    --red: #f87171;
+    --red-dim: #3d1a1a;
+    --amber: #fbbf24;
+    --amber-dim: #3d2e0a;
+    --blue: #60a5fa;
+    --blue-dim: #1a2a3d;
+    --accent: #b8f564;
+    --accent-dim: #2a3d10;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+
+  /* TOPBAR */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px; border-bottom: 1px solid var(--border);
+    background: var(--surface); position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .logo-text { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+  .logo-sub { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 1px; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .chip { font-size: 11px; font-family: var(--mono); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border2); color: var(--muted); background: var(--surface2); white-space: nowrap; }
+  .chip-green { border-color: var(--green-dim); background: var(--green-dim); color: var(--green); }
+  #date-chip { color: var(--muted); }
+
+  /* API KEY SETUP */
+  .setup-panel {
+    max-width: 560px; margin: 60px auto; padding: 0 20px;
+    animation: fadeUp 0.4s ease;
+  }
+  .setup-card {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 16px; padding: 32px;
+  }
+  .setup-card h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .setup-card p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 24px; }
+  .input-group { margin-bottom: 14px; }
+  .input-label { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
+  .input-row { display: flex; gap: 8px; }
+  input[type="password"], input[type="text"], input[type="number"] {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 8px; color: var(--text); font-family: var(--mono);
+    font-size: 13px; padding: 10px 14px; width: 100%;
+    outline: none; transition: border-color 0.2s;
+  }
+  input:focus { border-color: var(--accent); }
+  .btn {
+    padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer;
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    transition: opacity 0.15s, transform 0.1s; white-space: nowrap;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: #0d1a00; }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 20px; line-height: 1.6; }
+  .hint a { color: var(--accent); text-decoration: none; }
+  .hint a:hover { text-decoration: underline; }
+  #setup-error { font-size: 12px; color: var(--red); margin-top: 10px; min-height: 16px; }
+
+  /* MAIN DASHBOARD */
+  .dashboard { max-width: 900px; margin: 0 auto; padding: 24px 20px; }
+
+  /* METRICS ROW */
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .metric-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .metric-card .label { font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .metric-card .value { font-size: 22px; font-weight: 700; line-height: 1; }
+  .metric-card .sub { font-size: 11px; color: var(--muted); margin-top: 4px; font-family: var(--mono); }
+
+  /* RISK BAR */
+  .risk-info-bar {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px; margin-bottom: 20px;
+    display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
+  }
+  .risk-info-item { display: flex; flex-direction: column; gap: 3px; }
+  .risk-info-label { font-size: 10px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .risk-info-value { font-size: 14px; font-weight: 500; font-family: var(--mono); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+  .tab-btn {
+    font-family: var(--sans); font-size: 13px; padding: 8px 16px;
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; animation: fadeUp 0.25s ease; }
+
+  /* STOCK CARDS */
+  .stock-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px; margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+  .stock-card:hover { border-color: var(--border2); }
+  .stock-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+  .ticker { font-size: 22px; font-weight: 700; font-family: var(--mono); letter-spacing: -0.02em; }
+  .company { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .badge-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .badge {
+    font-size: 11px; font-family: var(--mono); padding: 3px 9px;
+    border-radius: 20px; border: 1px solid; font-weight: 500;
+  }
+  .badge-green { background: var(--green-dim); border-color: #1e5c34; color: var(--green); }
+  .badge-amber { background: var(--amber-dim); border-color: #5c3d0a; color: var(--amber); }
+  .badge-blue { background: var(--blue-dim); border-color: #1a3560; color: var(--blue); }
+  .badge-gray { background: var(--surface2); border-color: var(--border2); color: var(--muted); }
+  .badge-red { background: var(--red-dim); border-color: #5c1a1a; color: var(--red); }
+  .badge-accent { background: var(--accent-dim); border-color: #3a5a14; color: var(--accent); }
+
+  .stock-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-bottom: 12px; }
+  .stat { background: var(--surface2); border-radius: 8px; padding: 8px 10px; }
+  .stat-label { font-size: 10px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .stat-value { font-size: 14px; font-weight: 500; font-family: var(--mono); }
+
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .pill {
+    display: flex; gap: 6px; align-items: center;
+    font-size: 12px; font-family: var(--mono);
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 5px 10px;
+  }
+  .pill-label { color: var(--muted); }
+  .pill-value { font-weight: 500; }
+
+  .risk-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .risk-dots { display: flex; gap: 4px; }
+  .rdot { width: 9px; height: 9px; border-radius: 50%; background: var(--surface3); }
+  .rdot.active-low { background: var(--green); }
+  .rdot.active-med { background: var(--amber); }
+  .rdot.active-high { background: var(--red); }
+
+  .why { font-size: 13px; color: var(--muted); line-height: 1.7; border-left: 2px solid var(--accent); padding-left: 12px; }
+
+  /* SENTIMENT */
+  .sentiment-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; }
+  .sent-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .sent-label { font-size: 12px; font-family: var(--mono); color: var(--muted); min-width: 55px; }
+  .sent-track { flex: 1; height: 5px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
+  .sent-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+  .sent-pct { font-size: 12px; font-family: var(--mono); font-weight: 500; min-width: 32px; text-align: right; }
+  .news-item { border-left: 2px solid var(--border2); padding-left: 12px; margin-bottom: 14px; }
+  .news-headline { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .news-detail { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  /* POSITION CALC */
+  .calc-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; }
+  .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .calc-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+  .rule-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; }
+  .rule-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .rule-check { width: 16px; height: 16px; border-radius: 50%; background: var(--green-dim); border: 1px solid #1e5c34; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; color: var(--green); }
+  .rule-detail { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  /* GENERATE BTN */
+  .gen-row { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .btn-generate {
+    padding: 12px 24px; background: var(--accent); color: #0d1a00;
+    border: none; border-radius: 10px; font-family: var(--sans); font-size: 14px;
+    font-weight: 700; cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-generate:hover { opacity: 0.88; }
+  .btn-generate:active { transform: scale(0.97); }
+  .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .gen-note { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+  /* LOADING */
+  .loading-wrap { text-align: center; padding: 60px 20px; }
+  .spinner { width: 36px; height: 36px; border: 2px solid var(--surface3); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  .loading-msg { font-size: 13px; font-family: var(--mono); color: var(--muted); }
+
+  /* INTRO */
+  .intro-wrap { text-align: center; padding: 48px 20px; }
+  .intro-icon { font-size: 48px; margin-bottom: 16px; }
+  .intro-wrap h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .intro-wrap p { font-size: 13px; color: var(--muted); max-width: 420px; margin: 0 auto 24px; line-height: 1.7; }
+
+  /* UTILS */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hidden { display: none !important; }
+  #gen-error { font-size: 12px; color: var(--red); font-family: var(--mono); }
+
+  /* SECTION TITLE */
+  .section-title { font-size: 10px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; margin-top: 24px; }
+  .section-title:first-child { margin-top: 0; }
+
+  /* SETTINGS TOGGLE */
+  .settings-bar { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; }
+  .settings-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .settings-label { font-size: 11px; font-family: var(--mono); color: var(--muted); }
+
+  @media (max-width: 600px) {
+    .calc-grid { grid-template-columns: 1fr; }
+    .topbar { padding: 12px 16px; }
+    .dashboard { padding: 16px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <div>
+      <div class="logo-text">Morning Trade Report</div>
+      <div class="logo-sub" id="date-chip">Loading...</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="chip chip-green">$5,800 account</span>
+    <span class="chip">Day trading</span>
+    <button class="btn btn-ghost" id="change-key-btn" onclick="showSetup()" style="font-size:12px;padding:6px 12px;">⚙ API key</button>
+  </div>
+</div>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen" class="setup-panel">
+  <div class="setup-card">
+    <h2>🔑 Enter your API key</h2>
+    <p>This dashboard calls the Anthropic API directly from your browser. Your key is stored locally in your browser only — never sent anywhere else.</p>
+    <div class="input-group">
+      <label class="input-label">Anthropic API key</label>
+      <div class="input-row">
+        <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" />
+        <button class="btn btn-primary" onclick="saveKey()">Save &amp; continue →</button>
+      </div>
+    </div>
+    <div id="setup-error"></div>
+    <p class="hint">
+      Get a free API key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys → Create key.<br>
+      New accounts get free credits. This app uses ~$0.01–0.03 per report generation.
+    </p>
+  </div>
+</div>
+
+<!-- MAIN DASHBOARD -->
+<div id="main-screen" class="dashboard hidden">
+
+  <div class="settings-bar">
+    <div class="settings-row">
+      <span class="settings-label">Account balance:</span>
+      <input type="number" id="account-balance" value="5800" style="width:110px;font-size:13px;padding:6px 10px" oninput="updateRiskDisplay()" />
+      <span class="settings-label" style="margin-left:8px">1% risk = <strong id="r1" style="color:var(--green);font-family:var(--mono)">$58</strong> &nbsp;|&nbsp; 2% = <strong id="r2" style="color:var(--amber);font-family:var(--mono)">$116</strong> &nbsp;|&nbsp; Max day loss (5%): <strong id="rd" style="color:var(--red);font-family:var(--mono)">$290</strong></span>
+    </div>
+  </div>
+
+  <div class="gen-row">
+    <button class="btn-generate" id="gen-btn" onclick="generateReport()">
+      <span id="gen-icon">⚡</span> Generate today's report
+    </button>
+    <span class="gen-note" id="gen-error"></span>
+  </div>
+
+  <div id="loading-wrap" class="loading-wrap hidden">
+    <div class="spinner"></div>
+    <div class="loading-msg" id="load-msg">Scanning pre-market movers...</div>
+  </div>
+
+  <div id="intro-wrap" class="intro-wrap">
+    <div class="intro-icon">📈</div>
+    <h2>Ready when you are</h2>
+    <p>Click "Generate today's report" each morning to get AI-powered A+ day trading picks sized precisely for your $5,800 account — max $58–$116 risk per trade.</p>
+  </div>
+
+  <div id="report-wrap" class="hidden">
+    <div class="metrics" id="metrics-area"></div>
+    <div class="risk-info-bar" id="risk-bar"></div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('picks',this)">⭐ Top picks</button>
+      <button class="tab-btn" onclick="switchTab('sentiment',this)">📊 Sentiment</button>
+      <button class="tab-btn" onclick="switchTab('calc',this)">🧮 Position calc</button>
+    </div>
+
+    <div class="tab-pane active" id="tab-picks">
+      <div id="picks-area"></div>
+    </div>
+    <div class="tab-pane" id="tab-sentiment">
+      <div id="sentiment-area"></div>
+    </div>
+    <div class="tab-pane" id="tab-calc">
+      <div class="calc-card">
+        <p class="section-title">Position size calculator</p>
+        <div class="calc-grid">
+          <div>
+            <label class="input-label">Account balance ($)</label>
+            <input type="number" id="c-bal" value="5800" oninput="calcPos()" />
+          </div>
+          <div>
+            <label class="input-label">Risk per trade (% — max 2%)</label>
+            <input type="number" id="c-risk" value="1" min="0.5" max="2" step="0.5" oninput="calcPos()" />
+          </div>
+          <div>
+            <label class="input-label">Entry price ($)</label>
+            <input type="number" id="c-entry" value="30" step="0.01" oninput="calcPos()" />
+          </div>
+          <div>
+            <label class="input-label">Stop loss ($)</label>
+            <input type="number" id="c-stop" value="29" step="0.01" oninput="calcPos()" />
+          </div>
+        </div>
+        <div class="calc-results" id="c-results"></div>
+      </div>
+      <p class="section-title">Account rules</p>
+      <div id="rules-area"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Date ──────────────────────────────────────────────────────────────
+const today = new Date();
+const dateStr = today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+document.getElementById('date-chip').textContent = dateStr;
+
+// ── API Key ───────────────────────────────────────────────────────────
+function getKey(){ return localStorage.getItem('mtr_api_key') || ''; }
+function saveKey(){
+  const v = document.getElementById('api-key-input').value.trim();
+  if(!v.startsWith('sk-ant-') && !v.startsWith('sk-')){
+    document.getElementById('setup-error').textContent = 'Key should start with sk-ant-... — check and try again.';
+    return;
+  }
+  localStorage.setItem('mtr_api_key', v);
+  showDashboard();
+}
+function showSetup(){
+  document.getElementById('setup-screen').classList.remove('hidden');
+  document.getElementById('main-screen').classList.add('hidden');
+  document.getElementById('api-key-input').value = getKey();
+}
+function showDashboard(){
+  document.getElementById('setup-screen').classList.add('hidden');
+  document.getElementById('main-screen').classList.remove('hidden');
+  updateRiskDisplay();
+}
+
+if(getKey()) showDashboard(); else document.getElementById('setup-screen').classList.remove('hidden');
+
+// Enter key on input
+document.getElementById('api-key-input').addEventListener('keydown', e=>{ if(e.key==='Enter') saveKey(); });
+
+// ── Risk display ──────────────────────────────────────────────────────
+function getBalance(){ return parseFloat(document.getElementById('account-balance').value)||5800; }
+function updateRiskDisplay(){
+  const bal = getBalance();
+  document.getElementById('r1').textContent = '$'+Math.round(bal*0.01);
+  document.getElementById('r2').textContent = '$'+Math.round(bal*0.02);
+  document.getElementById('rd').textContent = '$'+Math.round(bal*0.05);
+}
+
+// ── Position calc ─────────────────────────────────────────────────────
+function calcPos(){
+  const bal = parseFloat(document.getElementById('c-bal').value)||5800;
+  const riskPct = Math.min(parseFloat(document.getElementById('c-risk').value)||1, 2);
+  const entry = parseFloat(document.getElementById('c-entry').value)||30;
+  const stop = parseFloat(document.getElementById('c-stop').value)||29;
+  const riskAmt = bal * riskPct / 100;
+  const dist = Math.abs(entry - stop);
+  const shares = dist > 0 ? Math.floor(riskAmt / dist) : 0;
+  const posVal = shares * entry;
+  const maxLoss = (shares * dist).toFixed(2);
+  const target = (entry + dist * 2).toFixed(2);
+  document.getElementById('c-results').innerHTML = `
+    <div class="stat"><div class="stat-label">Max risk $</div><div class="stat-value" style="color:var(--red)">$${maxLoss}</div></div>
+    <div class="stat"><div class="stat-label">Shares</div><div class="stat-value">${shares}</div></div>
+    <div class="stat"><div class="stat-label">Position value</div><div class="stat-value">$${posVal.toFixed(0)}</div></div>
+    <div class="stat"><div class="stat-label">2:1 target</div><div class="stat-value" style="color:var(--green)">$${target}</div></div>
+    <div class="stat"><div class="stat-label">% of account</div><div class="stat-value">${((posVal/bal)*100).toFixed(1)}%</div></div>
+  `;
+}
+calcPos();
+
+// ── Tabs ──────────────────────────────────────────────────────────────
+function switchTab(id, el){
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+}
+
+// ── Generate ──────────────────────────────────────────────────────────
+const loadMsgs = [
+  'Scanning pre-market movers...',
+  'Filtering by volume & catalyst...',
+  'Running risk analysis...',
+  'Sizing positions for your account...',
+  'Building your A+ watchlist...',
+];
+let loadInterval;
+
+async function generateReport(){
+  const key = getKey();
+  if(!key){ showSetup(); return; }
+  const bal = getBalance();
+  const risk1 = Math.round(bal*0.01);
+  const risk2 = Math.round(bal*0.02);
+  const maxDay = Math.round(bal*0.05);
+
+  document.getElementById('intro-wrap').classList.add('hidden');
+  document.getElementById('report-wrap').classList.add('hidden');
+  document.getElementById('loading-wrap').classList.remove('hidden');
+  document.getElementById('gen-btn').disabled = true;
+  document.getElementById('gen-error').textContent = '';
+
+  let li = 0;
+  document.getElementById('load-msg').textContent = loadMsgs[0];
+  loadInterval = setInterval(()=>{ li=(li+1)%loadMsgs.length; document.getElementById('load-msg').textContent=loadMsgs[li]; }, 2000);
+
+  const prompt = `You are a professional day trading analyst. Today is ${dateStr}. Generate a morning day trading report for a trader with a $${bal.toFixed(0)} account (day trades only — buys and sells same day). Conservative to moderate risk.
+
+CRITICAL position sizing rules:
+- 1% risk = $${risk1} max loss per trade
+- 2% risk = $${risk2} max loss per trade  
+- Use 1–1.5% risk per pick ($${risk1}–${Math.round(bal*0.015)}) to stay conservative
+- Shares = floor(risk_amount / stop_distance)
+- Max single-day loss cap: $${maxDay} (5% of account)
+- Best stock price range for this account: $5–$80
+
+Respond ONLY with a valid JSON object — no markdown, no code fences, no extra text.
+
+{
+  "market_summary": {
+    "overall_sentiment": "Bullish"|"Bearish"|"Neutral"|"Mixed",
+    "sentiment_pct": {"bullish": number, "bearish": number, "neutral": number},
+    "vix_level": "Low"|"Moderate"|"High",
+    "best_sectors": ["sector1", "sector2"],
+    "news_items": [
+      {"headline": "short headline", "impact": "Bullish"|"Bearish"|"Neutral", "detail": "1 sentence"}
+    ]
+  },
+  "account_rules": [
+    {"rule": "short rule title", "detail": "explanation tailored to a $${bal.toFixed(0)} account"}
+  ],
+  "stocks": [
+    {
+      "ticker": "TICKER",
+      "company": "Full Company Name",
+      "grade": "A+"|"A",
+      "price_range": "$X–$Y",
+      "entry": "$X.XX",
+      "stop_loss": "$X.XX",
+      "target": "$X.XX",
+      "shares_suggested": number,
+      "position_value": "$XXX",
+      "max_risk": "$XX",
+      "risk_pct_used": "1.0%"|"1.5%",
+      "risk_score": 1|2|3,
+      "risk_label": "Low"|"Moderate",
+      "rvol": "X.Xx",
+      "catalyst": "brief catalyst",
+      "why": "2–3 sentence explanation of why this is a good day trade today",
+      "strategy": "Opening range breakout"|"VWAP reclaim"|"Gap and go"|"Momentum continuation"|"Pre-market squeeze"
+    }
+  ],
+  "metrics": {
+    "picks_count": number,
+    "avg_risk_reward": "X:1",
+    "total_capital_at_risk": "$XXX",
+    "market_open": "9:30 AM ET"
+  }
+}
+
+Rules: exactly 4–5 picks, all A or A+, stop 0.5–3% from entry, 2:1+ R:R, risk_score 1–3 only, 3 account_rules, 3–4 news_items, realistic picks for May 2026 market.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    clearInterval(loadInterval);
+    if(!res.ok){
+      const err = await res.json();
+      throw new Error(err.error?.message || 'API error '+res.status);
+    }
+    const data = await res.json();
+    const raw = data.content.map(c=>c.text||'').join('').trim();
+    const clean = raw.replace(/```json|```/g,'').trim();
+    renderReport(JSON.parse(clean), bal);
+  } catch(e){
+    clearInterval(loadInterval);
+    document.getElementById('loading-wrap').classList.add('hidden');
+    document.getElementById('intro-wrap').classList.remove('hidden');
+    document.getElementById('gen-error').textContent = '⚠ ' + e.message;
+    document.getElementById('gen-btn').disabled = false;
+  }
+}
+
+// ── Render ────────────────────────────────────────────────────────────
+function rdots(score){
+  const cls = score<=2?'active-low':score===3?'active-med':'active-high';
+  return Array.from({length:5},(_,i)=>`<div class="rdot${i<score?' '+cls:''}"></div>`).join('');
+}
+function sentBadge(s){ return s==='Bullish'?'badge-green':s==='Bearish'?'badge-red':s==='Mixed'?'badge-amber':'badge-gray'; }
+function impactColor(s){ return s==='Bullish'?'var(--green)':s==='Bearish'?'var(--red)':'var(--muted)'; }
+
+function renderReport(r, bal){
+  document.getElementById('loading-wrap').classList.add('hidden');
+  document.getElementById('intro-wrap').classList.add('hidden');
+  document.getElementById('report-wrap').classList.remove('hidden');
+  document.getElementById('gen-btn').disabled = false;
+
+  const m=r.metrics||{}, ms=r.market_summary||{};
+
+  // Metrics
+  document.getElementById('metrics-area').innerHTML=`
+    <div class="metric-card"><div class="label">picks today</div><div class="value">${r.stocks.length}</div><div class="sub">A / A+ grade</div></div>
+    <div class="metric-card"><div class="label">avg R:R</div><div class="value">${m.avg_risk_reward||'2:1'}</div><div class="sub">risk/reward</div></div>
+    <div class="metric-card"><div class="label">total at risk</div><div class="value" style="font-size:18px;color:var(--red)">${m.total_capital_at_risk||'—'}</div><div class="sub">if all stop out</div></div>
+    <div class="metric-card"><div class="label">sentiment</div><div class="value" style="font-size:16px;margin-top:4px"><span class="badge ${sentBadge(ms.overall_sentiment)}">${ms.overall_sentiment||'Neutral'}</span></div></div>
+    <div class="metric-card"><div class="label">VIX</div><div class="value" style="font-size:16px;margin-top:4px"><span class="badge ${ms.vix_level==='High'?'badge-red':ms.vix_level==='Moderate'?'badge-amber':'badge-green'}">${ms.vix_level||'—'}</span></div></div>
+  `;
+
+  // Risk bar
+  document.getElementById('risk-bar').innerHTML=`
+    <div class="risk-info-item"><div class="risk-info-label">Account</div><div class="risk-info-value" style="color:var(--text)">$${bal.toFixed(0)}</div></div>
+    <div class="risk-info-item"><div class="risk-info-label">1% risk cap</div><div class="risk-info-value" style="color:var(--green)">$${Math.round(bal*0.01)}/trade</div></div>
+    <div class="risk-info-item"><div class="risk-info-label">2% risk cap</div><div class="risk-info-value" style="color:var(--amber)">$${Math.round(bal*0.02)}/trade</div></div>
+    <div class="risk-info-item"><div class="risk-info-label">Max day loss (5%)</div><div class="risk-info-value" style="color:var(--red)">$${Math.round(bal*0.05)}</div></div>
+    <div class="risk-info-item"><div class="risk-info-label">Report time</div><div class="risk-info-value">${m.market_open||'9:30 AM ET'}</div></div>
+  `;
+
+  // Picks
+  let picks='';
+  (r.stocks||[]).forEach(s=>{
+    const rc=s.risk_score<=2?'var(--green)':s.risk_score===3?'var(--amber)':'var(--red)';
+    picks+=`
+    <div class="stock-card">
+      <div class="stock-header">
+        <div>
+          <div class="ticker">${s.ticker}</div>
+          <div class="company">${s.company} · ${s.price_range}</div>
+          <div class="badge-row">
+            <span class="badge badge-accent">${s.grade}</span>
+            <span class="badge badge-gray">${s.strategy||''}</span>
+            <span class="badge badge-blue">RVOL ${s.rvol}x</span>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;font-family:var(--mono);color:var(--muted);margin-bottom:4px">CATALYST</div>
+          <div style="font-size:12px;font-weight:500;max-width:200px;text-align:right;line-height:1.4">${s.catalyst}</div>
+        </div>
+      </div>
+      <div class="stock-grid">
+        <div class="stat"><div class="stat-label">Entry</div><div class="stat-value">${s.entry}</div></div>
+        <div class="stat"><div class="stat-label">Stop loss</div><div class="stat-value" style="color:var(--red)">${s.stop_loss}</div></div>
+        <div class="stat"><div class="stat-label">Target</div><div class="stat-value" style="color:var(--green)">${s.target}</div></div>
+        <div class="stat"><div class="stat-label">Rel. volume</div><div class="stat-value">${s.rvol}x</div></div>
+      </div>
+      <div class="pills">
+        <div class="pill"><span class="pill-label">shares</span><span class="pill-value">${s.shares_suggested}</span></div>
+        <div class="pill"><span class="pill-label">position</span><span class="pill-value">${s.position_value}</span></div>
+        <div class="pill"><span class="pill-label">max loss</span><span class="pill-value" style="color:var(--red)">${s.max_risk}</span></div>
+        <div class="pill"><span class="pill-label">risk used</span><span class="pill-value">${s.risk_pct_used||'1%'}</span></div>
+      </div>
+      <div class="risk-bar-row">
+        <span style="font-size:11px;font-family:var(--mono);color:${rc};min-width:80px">risk ${s.risk_label}</span>
+        <div class="risk-dots">${rdots(s.risk_score)}</div>
+      </div>
+      <div class="why">${s.why}</div>
+    </div>`;
+  });
+  document.getElementById('picks-area').innerHTML=`<p class="section-title">A+ picks for ${dateStr}</p>`+picks;
+
+  // Sentiment
+  const sp=ms.sentiment_pct||{bullish:50,bearish:30,neutral:20};
+  const sectors=(ms.best_sectors||[]).map(s=>`<span class="badge badge-blue" style="margin-right:6px">${s}</span>`).join('');
+  const news=(ms.news_items||[]).map(n=>`
+    <div class="news-item" style="border-color:${impactColor(n.impact)}">
+      <div class="news-headline">${n.headline} <span class="badge ${sentBadge(n.impact)}" style="font-size:10px">${n.impact}</span></div>
+      <div class="news-detail">${n.detail}</div>
+    </div>`).join('');
+  document.getElementById('sentiment-area').innerHTML=`
+    <p class="section-title">Market sentiment</p>
+    <div class="sentiment-card">
+      <div style="margin-bottom:14px;font-size:13px">Best sectors: ${sectors}</div>
+      <div class="sent-row"><span class="sent-label">Bullish</span><div class="sent-track"><div class="sent-fill" style="width:${sp.bullish}%;background:var(--green)"></div></div><span class="sent-pct" style="color:var(--green)">${sp.bullish}%</span></div>
+      <div class="sent-row"><span class="sent-label">Bearish</span><div class="sent-track"><div class="sent-fill" style="width:${sp.bearish}%;background:var(--red)"></div></div><span class="sent-pct" style="color:var(--red)">${sp.bearish}%</span></div>
+      <div class="sent-row"><span class="sent-label">Neutral</span><div class="sent-track"><div class="sent-fill" style="width:${sp.neutral}%;background:var(--muted)"></div></div><span class="sent-pct" style="color:var(--muted)">${sp.neutral}%</span></div>
+    </div>
+    <p class="section-title">Key market news</p>
+    ${news}
+  `;
+
+  // Rules
+  const rules=(r.account_rules||[]).map(rule=>`
+    <div class="rule-card">
+      <div class="rule-title"><span class="rule-check">✓</span>${rule.rule}</div>
+      <div class="rule-detail">${rule.detail}</div>
+    </div>`).join('');
+  document.getElementById('rules-area').innerHTML=rules;
+
+  // Sync calc balance
+  document.getElementById('c-bal').value = bal;
+  calcPos();
+}
+</script>
+</body>
+</html>
